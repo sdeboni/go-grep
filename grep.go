@@ -155,49 +155,23 @@ func (b *matchBuilder) exact() *matchBuilder {
   b.exactMatch = true
   return b
 }
-func (b *matchBuilder) build() (match stringMatcher) {
-  if b.ignoreCase && b.exactMatch {
-    lowerPattern := strings.ToLower(b.pattern)
-    if b.negate {
-      match = func(line string) bool {
-        return lowerPattern != strings.ToLower(line)
-      } 
-    } else {
-      match = func(line string) bool {
-        return lowerPattern == strings.ToLower(line)
-      } 
+func (b *matchBuilder) build() stringMatcher {
+  return func(line string) bool {
+    pattern := b.pattern
+    if b.ignoreCase {
+      pattern = strings.ToLower(pattern) 
+      line = strings.ToLower(line)
     }
-  } else if b.ignoreCase {
-    lowerPattern := strings.ToLower(b.pattern)
-    if b.negate {
-      match = func(line string) bool {
-        return !strings.Contains(strings.ToLower(line), lowerPattern)
-      } 
+
+    var matched bool
+    if b.exactMatch {
+      matched = pattern == line
     } else {
-      match = func(line string) bool {
-        return strings.Contains(strings.ToLower(line), lowerPattern)
-      } 
+      matched = strings.Contains(line, pattern)
     }
-  } else if b.exactMatch {
     if b.negate {
-      match = func(line string) bool {
-        return line != b.pattern
-      } 
-    } else {
-      match = func(line string) bool {
-        return line == b.pattern
-      } 
+      matched = !matched
     }
-  } else {
-    if b.negate {
-      match = func(line string) bool {
-        return !strings.Contains(line, b.pattern)
-      }
-    } else {
-      match = func(line string) bool {
-        return strings.Contains(line, b.pattern)
-      }
-    }
+    return matched
   }
-  return
 }
