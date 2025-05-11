@@ -5,6 +5,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+  "grep/branching"
+  "grep/nonbranching"
+  "grep/procedural"
 )
 
 func createFiles(content []string) (filenames []string) {
@@ -57,6 +60,9 @@ func deleteFiles(filenames []string) {
 	}
 }
 
+func Search(pattern string, flags, files []string) []string {
+  return branching.Search(pattern, flags, files)
+}
 func TestSearch(t *testing.T) {
 	files := createFiles(fileContentData)
 	defer deleteFiles(files)
@@ -77,7 +83,7 @@ func TestSearch(t *testing.T) {
 	}
 }
 
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearchBranching(b *testing.B) {
 	if testing.Short() {
 		b.Skip("skipping benchmark in short mode.")
 	}
@@ -87,7 +93,35 @@ func BenchmarkSearch(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, tc := range testCases {
-			Search(tc.pattern, tc.flags, tc.files)
+			branching.Search(tc.pattern, tc.flags, tc.files)
+		}
+	}
+}
+func BenchmarkSearchNonBranching(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping benchmark in short mode.")
+	}
+	files := createFiles(fileContentData)
+	defer deleteFiles(files)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, tc := range testCases {
+			nonbranching.Search(tc.pattern, tc.flags, tc.files)
+		}
+	}
+}
+func BenchmarkSearchProcedural(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping benchmark in short mode.")
+	}
+	files := createFiles(fileContentData)
+	defer deleteFiles(files)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for _, tc := range testCases {
+			procedural.Search(tc.pattern, tc.flags, tc.files)
 		}
 	}
 }
